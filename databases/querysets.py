@@ -9,7 +9,7 @@ from sqlalchemy import select, update
 #         # genre = Genre(name="Fantasy", description="It's beatiuful but painful to look at")
 #         # genre1 = Genre(name="Fiction", description="It's not real, but still fascinating")
 #         # genre2 = Genre(name="Science", description="You can learn a lot with this")
-#         genre3 = Genre(name="Horror", description="It's scary with sound")
+#         genre3 = Genre(name="Comedy", description="Laugh all you want")
 #         session.add(genre3) 
 #         await session.commit() 
 
@@ -56,21 +56,86 @@ from sqlalchemy import select, update
 
 
 
+async def get_movie_by_id(movie_id):
+    async with async_session() as session:
+        result = await session.scalar(select(Movies).where(Movies.id == movie_id)) 
+        return result   
+    
+async def get_series_by_id(series_id):
+    async with async_session() as session:
+        result = await session.scalar(select(Series).where(Series.id == series_id)) 
+        return result
+    
+async def get_actors_by_id(actors_id):
+    async with async_session() as session:
+        result = await session.scalar(select(Actors).where(Actors.id == actors_id)) 
+        return result
+    
+async def get_directors_by_id(directors_id):
+    async with async_session() as session:
+        result = await session.scalar(select(Directors).where(Directors.id == directors_id)) 
+        return result
 
+
+
+async def get_movie_by_genre(genre_id):
+    async with async_session() as session:
+        result = await session.scalars(
+            select(Movies).join(movie_genre).where(movie_genre.c.genre_id == genre_id)
+        )
+        return result
+    
+async def get_movie_by_actor(actor_id):
+    async with async_session() as session:
+        result = await session.scalars(
+            select(Movies).join(movie_actors).where(movie_actors.c.actor_id == actor_id) 
+        )
+        return result
+    
+async def get_movie_by_director(director_id):
+    async with async_session() as session:
+        result = await session.scalars(
+            select(Movies).join(movie_directors).where(movie_directors.c.director_id == director_id) 
+        )
+        return result
 
 # many-to-many associations
 
 # async def add_movie_actors():
 #     async with async_session() as session:
-#         stmt = movie_actors.insert().values(movie_id=1, actor_id=6)
+#         stmt = movie_actors.insert().values(movie_id=3, actor_id=5)
 #         await session.execute(stmt)
 #         await session.commit()
 
-async def add_movie_directors():
-    async with async_session() as session:
-        stmt = movie_directors.insert().values(movie_id=1, directors_id=1)
-        await session.execute(stmt)
-        await session.commit()
+# async def add_movie_directors():
+#     async with async_session() as session:
+#         stmt = movie_directors.insert().values(movie_id=3, director_id=3)
+#         await session.execute(stmt)
+#         await session.commit()
+
+# async def add_movie_genres():
+#     async with async_session() as session:
+#         stmt = movie_genre.insert().values(movie_id=3, genre_id=3) 
+#         await session.execute(stmt) 
+#         await session.commit()
+
+# async def add_series_actors(): 
+#     async with async_session() as session:
+#         stmt = series_actors.insert().values(series_id=4, actor_id=6) 
+#         await session.execute(stmt) 
+#         await session.commit()
+
+# async def add_series_directors():
+#     async with async_session() as session:
+#         stmt = series_directors.insert().values(series_id=4, director_id=2)
+#         await session.execute(stmt)
+#         await session.commit()
+
+# async def add_series_genres():
+#     async with async_session() as session:
+#         stmt = series_genre.insert().values(series_id=4, genre_id=6) 
+#         await session.execute(stmt) 
+#         await session.commit()
 
 
 
@@ -79,7 +144,7 @@ async def add_movie_directors():
 
 
 
-
+# to add to bot like an inline button
 async def all_movies():
     async with async_session() as session:
         result = await session.scalars(select(Movies))

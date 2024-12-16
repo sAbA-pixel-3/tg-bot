@@ -12,7 +12,9 @@ from databases.querysets import *
 async def main():
     # await create_tables()
 
-    # await add_movie_directors() 
+    # await add_series_actors()
+    # await add_series_directors()
+    # await add_series_genres() 
 
     # await add_genre() 
     # await add_url() 
