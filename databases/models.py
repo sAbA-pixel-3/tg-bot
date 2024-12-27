@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 
 
 
-class Base(AsyncAttrs, DeclarativeBase):
+class Base(AsyncAttrs, DeclarativeBase): 
     pass
 
 # отдельные ТАБЛИЦЫ для Many-to-Many отношений 
@@ -38,7 +38,7 @@ series_genre = Table("series_genre", Base.metadata,
 
 
 
-class Url(Base): # one-to-many with Movies and Series
+class Url(Base): # one-to-one with Movies and Series 
     __tablename__ =  "url"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -54,7 +54,7 @@ class Movies(Base):
     poster: Mapped[str] = mapped_column(String(255), nullable=False)
     title: Mapped[str] = mapped_column(String(100))
     release_date: Mapped[Date] = mapped_column(Date)
-    description: Mapped[str] = mapped_column(Text)
+    description: Mapped[str] = mapped_column(Text) 
     country: Mapped[str] = mapped_column(String(100)) 
     age_limit: Mapped[int] = mapped_column(Integer, nullable=False)
     trailer: Mapped[str] = mapped_column(String(255))
@@ -116,7 +116,7 @@ class Directors(Base):
     image: Mapped[str] = mapped_column(String(255), nullable=False)
     first_name: Mapped[str] = mapped_column(String(100), nullable=False)
     last_name: Mapped[str] = mapped_column(String(100)) 
-    birth_day: Mapped[Date] = mapped_column(Date)
+    birth_day: Mapped[Date] = mapped_column(Date) 
     description: Mapped[str] = mapped_column(Text) 
 
     movies = relationship("Movies", secondary=movie_directors, back_populates="directors")

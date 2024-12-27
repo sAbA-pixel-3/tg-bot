@@ -10,44 +10,103 @@ kb = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='Series catalog')],
     [KeyboardButton(text='Genre catalog')],
     [KeyboardButton(text='Actors')],
+    [KeyboardButton(text='Search actors')],
     [KeyboardButton(text='Directors')], 
-    [KeyboardButton(text='Search movie/series by its name')],
+    [KeyboardButton(text='Search directors')],
+    [KeyboardButton(text='Search movie/series by its name')] 
 ], resize_keyboard=True, input_field_placeholder="Choose below:")
 
 
 
-
-async def get_movies_kb():
+###
+PAGE_SIZE = 2
+async def get_movies_kb(page): 
+    offset = (page - 1) * PAGE_SIZE 
     kb = InlineKeyboardBuilder()
-    movies = await all_movies()
+    movies = await all_movies(offset=offset,limit=PAGE_SIZE)
     for movie in movies:
         kb.add(InlineKeyboardButton(text=movie.title,
             callback_data=f"movie_{movie.id}")) 
+        
+    if page > 1:
+        kb.add(InlineKeyboardButton(text='<', callback_data=f"page2_{page-1}")) 
+    if len(movies) == PAGE_SIZE: 
+        kb.add(InlineKeyboardButton(text='>', callback_data=f"page2_{page+1}"))
+
     return kb.adjust(2).as_markup()
 
-async def get_series_kb():
+async def get_movies_kb_admin():
+    kb = InlineKeyboardBuilder()
+    movies = await all_movies2() 
+    for movie in movies:
+        kb.add(InlineKeyboardButton(text=movie.title,
+            callback_data=f"movie2_admin_{movie.id}")) 
+    return kb.adjust(2).as_markup() 
+###
+PAGE_SIZE = 2
+async def get_series_kb(page):
+    offset = (page - 1) * PAGE_SIZE
+    kb = InlineKeyboardBuilder()
+    series = await all_series(offset=offset,limit=PAGE_SIZE) 
+    for serie in series: 
+        kb.add(InlineKeyboardButton(text=serie.title, 
+            callback_data=f"series_{serie.id}"))
+
+    if page > 1:
+        kb.add(InlineKeyboardButton(text='<', callback_data=f"page3_{page-1}")) 
+    if len(series) == PAGE_SIZE:  
+        kb.add(InlineKeyboardButton(text='>', callback_data=f"page3_{page+1}")) 
+
+    return kb.adjust(2).as_markup()
+
+async def get_series_kb_admin():
     kb = InlineKeyboardBuilder()
     series = await all_series() 
     for serie in series: 
         kb.add(InlineKeyboardButton(text=serie.title, 
-            callback_data=f"series_{serie.id}")) 
+            callback_data=f"series2_admin_{serie.id}")) 
     return kb.adjust(2).as_markup() 
-
-async def get_genre_kb():
-    kb = InlineKeyboardBuilder()
-    genres = await all_genre() 
+### 
+PAGE_SIZE = 2
+async def get_genre_kb(page):
+    offset = (page - 1) * PAGE_SIZE
+    kb = InlineKeyboardBuilder() 
+    genres = await all_genre(offset=offset,limit=PAGE_SIZE)  
     for genre in genres: 
         kb.add(InlineKeyboardButton(text=genre.name, 
             callback_data=f"genre_{genre.id}")) 
-    return kb.adjust(3).as_markup()
 
+    if page > 1:
+        kb.add(InlineKeyboardButton(text='<', callback_data=f"page_{page-1}")) 
+    if len(genres) == PAGE_SIZE: 
+        kb.add(InlineKeyboardButton(text='>', callback_data=f"page_{page+1}")) 
+
+    return kb.adjust(2).as_markup()
+
+async def get_genre_kb_admin():
+    kb = InlineKeyboardBuilder()
+    genres = await all_genre2() 
+    for genre in genres: 
+        kb.add(InlineKeyboardButton(text=genre.name, 
+            callback_data=f"genre2_admin_{genre.id}")) 
+    return kb.adjust(3).as_markup()
+###
 async def get_actors_kb():
     kb = InlineKeyboardBuilder()
     actors = await all_actors() 
     for actor in actors: 
         kb.add(InlineKeyboardButton(text=f"{actor.first_name} {actor.last_name}", 
-            callback_data=f"actors_{actor.id}"))   
+            callback_data=f"actors_{actor.id}"))    
     return kb.adjust(2).as_markup()
+
+async def get_actors_kb_admin():
+    kb = InlineKeyboardBuilder()
+    actors = await all_actors()  
+    for actor in actors:  
+        kb.add(InlineKeyboardButton(text=f"{actor.first_name} {actor.last_name}", 
+            callback_data=f"actors2_admin_{actor.id}"))   
+    return kb.adjust(2).as_markup()
+###
 
 async def get_directors_kb():
     kb = InlineKeyboardBuilder()
@@ -65,6 +124,7 @@ async def get_movies_by_genre_kb(genre_id):
     for movie in movies:
         kb.add(InlineKeyboardButton(text=movie.title,
             callback_data=f"movie_{movie.id}")) 
+    kb.add(InlineKeyboardButton(text='Назад', callback_data=f"back_to_genre"))
     return kb.adjust(2).as_markup() 
 
 async def get_actores_kb():
@@ -101,7 +161,21 @@ async def get_movies_by_directors_kb(director_id):
 
 
 
+async def back_kb(): 
+    kb = InlineKeyboardBuilder()
+    kb.add(InlineKeyboardButton(text='Назад', callback_data=f"back_to_genre"))
+    return kb.adjust(2).as_markup() 
 
+
+
+# async def get_movies_by_title_kb(title):
+#     kb = InlineKeyboardBuilder()
+#     movies = await get_movies_by_title(title)
+#     if movies:
+#         for m in movies:
+#             kb.add(InlineKeyboardButton(text=m.tite, callback_data=f"movie_{m.id}"))
+#             return kb.adjust(2).as_markup()
+    
 
 
 
@@ -134,3 +208,4 @@ async def get_movies_by_directors_kb(director_id):
 #     [InlineKeyboardButton(text="Leonardo DiCaprio", callback_data='bye')],
 #     [InlineKeyboardButton(text="Ryan Gosling", callback_data='bye')] 
 # ])
+

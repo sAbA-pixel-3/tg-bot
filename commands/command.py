@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.filters import Command, CommandStart
-from aiogram.types import Message, CallbackQuery, FSInputFile
+from aiogram.types import Message, CallbackQuery, FSInputFile, URLInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
 from aiogram import F 
 from commands.keyboards_tg import *
@@ -15,27 +15,37 @@ async def start_handler(message: Message):
 @command_router.message(F.text == "Movie catalog")
 async def movie_handler(message: Message):
     await message.answer(f"Movie catalog:",
-        reply_markup=await get_movies_kb())
+        reply_markup=await get_movies_kb(page=1)) 
     
 @command_router.message(F.text == "Series catalog")
 async def series_handler(message: Message):
     await message.answer(f"Series catalog:",
-        reply_markup=await get_series_kb())
+        reply_markup=await get_series_kb(page=1))
     
 @command_router.message(F.text == "Genre catalog")
 async def genre_handler(message: Message):
     await message.answer(f"Genre catalog:",
-        reply_markup=await get_genre_kb()) 
+        reply_markup=await get_genre_kb(page=1))  
     
 @command_router.message(F.text == "Actors")
 async def actor_handler(message: Message):
     await message.answer(f"Actors:",
         reply_markup=await get_actores_kb())
     
+# @command_router.message(F.text == "Search actors") 
+# async def actor_handler(message: Message):
+#     await message.answer(f"Actors:", 
+#         reply_markup=await get_actors_kb()) 
+    
 @command_router.message(F.text == "Directors")
 async def director_handler(message: Message):
     await message.answer(f"Directors:",
-        reply_markup=await get_directores_kb()) 
+        reply_markup=await get_directores_kb())
+
+# @command_router.message(F.text == "Directors")
+# async def director_handler(message: Message):
+#     await message.answer(f"Directors:",
+#         reply_markup=await get_directors_kb(page=1)) 
     
 
 
@@ -50,15 +60,22 @@ async def movie_detail_handler(callback: CallbackQuery):
                                         f'Страна: {movie.country}\n'
                                         f'Возрастное ограничение: {movie.age_limit}')
     
-    if movie.poster.startswith('http') or movie.poster.startswith('AgA'):
+    if movie.poster.startswith('http') or movie.poster.startswith('https'):
+        album.add_photo(media=URLInputFile(movie.poster)) 
+    elif movie.poster.startswith('AgA'):
         album.add_photo(media=movie.poster) 
     else:
-        album.add_photo(media=FSInputFile(movie.poster)) 
-    if movie.trailer.startswith('http') or movie.trailer.startswith('AgA'):
-        album.add_video(media=movie.trailer) 
+        album.add_photo(media=FSInputFile(movie.poster))
+
+    if movie.trailer.startswith('http') or movie.trailer.startswith('https'):
+        album.add_video(media=URLInputFile(movie.trailer))  
+    elif movie.trailer.startswith('BAA'):
+        album.add_video(medis=movie.trailer) 
     else:
         album.add_video(media=FSInputFile(movie.trailer)) 
     await callback.message.answer_media_group(media=album.build())
+
+    await callback.message.answer_media_group(media=album.build()) 
 
 
 @command_router.callback_query(F.data.startswith('series_'))
@@ -76,7 +93,7 @@ async def series_detail_handler(callback: CallbackQuery):
         album.add_photo(media=series.poster) 
     else:
         album.add_photo(media=FSInputFile(series.poster)) 
-    if series.trailer.startswith('http') or series.trailer.startswith('AgA'):
+    if series.trailer.startswith('http') or series.trailer.startswith('BAA'):
         album.add_video(media=series.trailer) 
     else:
         album.add_video(media=FSInputFile(series.trailer)) 
@@ -124,6 +141,12 @@ async def movie_by_genre_handler(callback: CallbackQuery):
     await callback.message.answer(f"Фильмы по жанру:", 
         reply_markup=await get_movies_by_genre_kb(g_id))
 
+@command_router.callback_query(F.data.startswith('back_to_genre'))
+async def back_to_genre_handler(callback: CallbackQuery):
+    await callback.message.answer('Выберите жанр', reply_markup=await get_genre_kb(page=1))
+
+
+
 @command_router.callback_query(F.data.startswith('actor_'))
 async def movie_by_actors_handler(callback: CallbackQuery):
     a_id = callback.data.split('_')[1] 
@@ -137,6 +160,37 @@ async def movie_by_directors_handler(callback: CallbackQuery):
         reply_markup=await get_movies_by_directors_kb(d_id)) 
 
 
+
+
+@command_router.callback_query(F.data.startswith('page_')) 
+async def genre_page_handler(callback: CallbackQuery):
+    data = callback.data.split('_')[1] 
+    id = int(data) 
+    await callback.message.edit_reply_markup(reply_markup=await get_genre_kb(page=id))
+
+@command_router.callback_query(F.data.startswith('page2_')) 
+async def movie_page_handler(callback: CallbackQuery):
+    data = callback.data.split('_')[1] 
+    id = int(data) 
+    await callback.message.edit_reply_markup(reply_markup=await get_movies_kb(page=id))
+
+@command_router.callback_query(F.data.startswith('page3_')) 
+async def series_page_handler(callback: CallbackQuery):
+    data = callback.data.split('_')[1] 
+    id = int(data) 
+    await callback.message.edit_reply_markup(reply_markup=await get_series_kb(page=id))
+
+# @command_router.callback_query(F.data.startswith('page4_')) 
+# async def actors_page_handler(callback: CallbackQuery):
+#     data = callback.data.split('_')[1] 
+#     id = int(data) 
+#     await callback.message.edit_reply_markup(reply_markup=await get_actors_kb(page=id))
+
+# @command_router.callback_query(F.data.startswith('page5_')) 
+# async def directors_page_handler(callback: CallbackQuery):
+#     data = callback.data.split('_')[1] 
+#     id = int(data) 
+#     await callback.message.edit_reply_markup(reply_markup=await get_directors_kb(page=id))
 
 
 # @command_router.message(F.text == 'Movies') 
@@ -190,8 +244,94 @@ async def movie_by_directors_handler(callback: CallbackQuery):
 # #     await message.answer(f"{message.text}")
 
 
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
+
+class FindMovie(StatesGroup):
+    title = State()
+
+@command_router.message(F.text == "Search movie/series by its name")
+async def find_movie_handler(message: Message, state: FSMContext):
+    await message.answer("Введите название фильма/сериала: ")
+    await state.set_state(FindMovie.title)
+
+@command_router.message(FindMovie.title)
+async def find_movie_handler(message: Message, state: FSMContext):
+    search_title = message.text.strip()
+    if search_title: 
+        movies = await get_movies_by_title(search_title)
+        if movies:       
+            kb = InlineKeyboardBuilder() 
+            for m in movies:
+                kb.add(InlineKeyboardButton(text=m.title, 
+                    callback_data=f"movie_{m.id}"))
+            await message.answer("Фильм/сериал по вашему запросу: ",
+                reply_markup=kb.adjust(2).as_markup())  
+        else: 
+            await message.answer("Фильм/сериал не найден!")
+    else:
+        await message.answer("Введите название фильма/сериала: ")  
+    await state.clear()
 
 
 
+class FindActors(StatesGroup):
+    name = State() 
+
+@command_router.message(F.text == "Search actors")
+async def find_actors_handler(message: Message, state: FSMContext):
+    await message.answer("Введите имя актёра: ") 
+    await state.set_state(FindActors.name) 
+
+@command_router.message(FindActors.name) 
+async def find_actors_handler(message: Message, state: FSMContext):
+    search_name = message.text.strip()
+    if search_name:  
+        actors = await get_actors_by_name(search_name) 
+        if actors:        
+            kb = InlineKeyboardBuilder() 
+            for a in actors: 
+                kb.add(InlineKeyboardButton(text=f"{a.first_name} {a.last_name}", 
+                    callback_data=f"actor_{a.id}")) 
+            await message.answer("Актёр по вашему запросу: ",
+                reply_markup=kb.adjust(2).as_markup())  
+        else: 
+            await message.answer("Актёр не найден!")
+    else:
+        await message.answer("Введите имя актёра: ")  
+    await state.clear()
+
+
+
+class FindDirectors(StatesGroup):
+    name = State() 
+
+@command_router.message(F.text == "Search directors")
+async def find_directors_handler(message: Message, state: FSMContext):
+    await message.answer("Введите имя режиссёра: ") 
+    await state.set_state(FindDirectors.name) 
+
+@command_router.message(FindDirectors.name) 
+async def finddireactors_handler(message: Message, state: FSMContext):
+    search_name = message.text.strip()
+    if search_name:  
+        directors = await get_directors_by_name(search_name) 
+        if directors:        
+            kb = InlineKeyboardBuilder() 
+            for d in directors: 
+                kb.add(InlineKeyboardButton(text=f"{d.first_name} {d.last_name}", 
+                    callback_data=f"director_{d.id}")) 
+            await message.answer("Режиссёр по вашему запросу: ",
+                reply_markup=kb.adjust(2).as_markup())  
+        else: 
+            await message.answer("Режиссёр не найден!")
+    else:
+        await message.answer("Введите имя режиссёра: ")  
+    await state.clear()  
+
+
+
+
+ 
 
 
