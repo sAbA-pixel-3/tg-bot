@@ -36,6 +36,17 @@ def download_video(update, context):
             context.bot.send_message(chat_id=update.effective_chat.id, 
                 text="Failed to download the video!")
 
+def main():
+    updater = Updater(token="8101133514:AAF-qC30hBRnbJjXORgjl0yTRE2Kcn7QVBc", use_context=True)
+
+    dispatcher = updater.dispatcher
+
+    dispatcher.add_handler(CommandHandler('start', start))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, download_video))
+
+    updater.start_polling()
+    updater.idle()
+
 
 
 
