@@ -141,7 +141,7 @@ async def movie_by_genre_handler(callback: CallbackQuery):
     await callback.message.answer(f"Фильмы по жанру:", 
         reply_markup=await get_movies_by_genre_kb(g_id))
 
-@command_router.callback_query(F.data.startswith('back_to_genre'))
+@command_router.callback_query(F.data.startswith('back_to_genre')) 
 async def back_to_genre_handler(callback: CallbackQuery):
     await callback.message.answer('Выберите жанр', reply_markup=await get_genre_kb(page=1))
 
