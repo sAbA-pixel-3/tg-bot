@@ -11,7 +11,6 @@ bot = Bot(token=BOT_TOKEN)
 router = Router()
 
 def download_yt_video(url: str) -> str:
-    """Download the video using yt-dlp and return the file path."""
     ydl_opts = {
         'format': 'best',
         'outtmpl': '%(title)s.%(ext)s'} # Save the video with its title as the filename
