@@ -4,8 +4,8 @@ from aiogram.filters import Command
 from yt_dlp import YoutubeDL
 import os
 import asyncio
+from config import BOT_TOKEN 
 
-BOT_TOKEN = '8101133514:AAF-qC30hBRnbJjXORgjl0yTRE2Kcn7QVBc'
 
 bot = Bot(token=BOT_TOKEN)
 router = Router()
@@ -13,7 +13,7 @@ router = Router()
 def download_yt_video(url: str) -> str:
     ydl_opts = {
         'format': 'best',
-        'outtmpl': '%(title)s.%(ext)s'} # Save the video with its title as the filename
+        'outtmpl': '%(title)s.%(ext)s'} # save the file with its name
 
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
@@ -21,11 +21,10 @@ def download_yt_video(url: str) -> str:
 
 @router.message(Command("start"))
 async def start_command(message: Message):
-    await message.reply("Send me a YouTube video URL, and I'll download it for you!")
+    await message.reply("Отправьте ссылку на YouTube и я скачаю видео🙃") 
 
 @router.message()
 async def handle_video_request(message: Message):
-    """Handle video download requests."""
     url = message.text
     try:
         video_path = download_yt_video(url)
@@ -33,7 +32,7 @@ async def handle_video_request(message: Message):
         await message.answer_document(video_file)
         os.remove(video_path)
     except Exception as e:
-        await message.reply(f"An error occurred: {str(e)}")
+        await message.reply(f"Произошла ошибка: {str(e)}")
 
 async def main():
     dp = Dispatcher()
@@ -41,7 +40,7 @@ async def main():
 
     await bot.delete_webhook(drop_pending_updates=True)
 
-    print("Bot is running...")
+    print("Бот иштеп жатат...") 
 
     await dp.start_polling(bot)
 
